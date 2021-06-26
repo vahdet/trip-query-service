@@ -1,4 +1,4 @@
-import { GeolocationPoint } from './trip'
+import { GeolocationPoint } from '../domain/trip'
 
 export interface GeolocationCircle {
   point: GeolocationPoint

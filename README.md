@@ -12,7 +12,7 @@ AFAIK, the term [dependency rule](https://www.informit.com/articles/article.aspx
 
 ### Dependency Inversion
 
-Although ES6 has class structure, it does not have Java-like interfaces (TypeScript interfaces are a different beast). There are tools for it like [InversifyJS](https://github.com/inversify/InversifyJS), however I may not have time to implement it.
+Although ES6 has class structure, it does not have Java-like interfaces. At this point TypeScript interfaces are a different beast here to rescue. We can make an ES6 class _extend_ a TypeScript interface specifying the required methods. Examples can be seen at [`service.ts`](./src/app/service.ts) and [`repository.ts`](./src/app/repository.ts).
 
 ### MongoDB Node Driver vs Mongoose
 
@@ -29,6 +29,10 @@ Most of the use cases here require complex queries: at least two coordinate valu
 ### OpenAPI3 & Swagger
 
 I intended to put some spec but it started getting cumbersome for a simple project. I guess I won't bring it into the game.
+
+### Environment Variables
+
+Although [12-Factor Apps](https://12factor.net/config) propose externalized configurations and _dotenv_ library [encourages so](https://github.com/motdotla/dotenv#should-i-commit-my-env-file), I keep the [`.env`](./src/.env) as the config base both for standalone and containerized modes. Especially if I were utilizing Kubernetes, its `ConfigMaps` together with GitHub Secrets could be a good vault implementation for config & secrets.
 
 ### Monolithic Structure
 

@@ -1,14 +1,31 @@
-import { GeolocationCircle } from 'domain/searchArea'
-import { Trip } from 'domain/trip'
-import { MongoRepository } from './repository'
+import { GeolocationCircle } from './searchArea'
+import { Trip } from '../domain/trip'
+import { IRepository } from './repository'
+
+/**
+ * A service interface for trips
+ */
+export interface IService<T> {
+  getTrips(
+    searchCircle: GeolocationCircle,
+    startDateTime?: Date,
+    endDateTime?: Date
+  ): Promise<Array<T>>
+  getMinMaxTravelledDistances(
+    searchCircle: GeolocationCircle
+  ): Promise<{ min: number; max: number }>
+  getVehicleModelGroupedTripCounts(
+    searchCircle: GeolocationCircle
+  ): Promise<Record<number, number>>
+}
 
 /**
  * A service implementation for the trips
  */
 export class TripService {
-  #repo: MongoRepository
+  #repo: IRepository<Trip>
 
-  constructor(repo: MongoRepository) {
+  constructor(repo: IRepository<Trip>) {
     this.#repo = repo
   }
 
@@ -48,7 +65,7 @@ export class TripService {
    */
   public async getVehicleModelGroupedTripCounts(
     searchCircle: GeolocationCircle
-  ): Promise<any> {
+  ): Promise<Record<number, number>> {
     return await this.#repo.findVehicleModelGroupedTripCounts(searchCircle)
   }
 }

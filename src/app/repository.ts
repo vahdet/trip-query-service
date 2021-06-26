@@ -1,29 +1,46 @@
-import { GeolocationCircle } from 'domain/searchArea'
-import { Trip } from 'domain/trip'
-import { Collection, Db, MongoClient } from 'mongodb'
-import assert from 'assert/strict'
-import { convertDataSchemaToModel, TripMongoSchema } from './dataAccessUtils'
+import { default as mongodb } from 'mongodb'
+import winston from 'winston'
+import { strict as assert } from 'assert'
+import { Trip } from '../domain/trip'
+import { GeolocationCircle } from './searchArea'
+import { convertDataSchemaToModel, TripMongoSchema } from './conversion'
 
 const tripCollectionName = 'trips'
+
+const logger = winston.loggers.get('default')
+
+/**
+ * A repository interface for trips
+ */
+export interface IRepository<T> {
+  findTrips(
+    searchCircle: GeolocationCircle,
+    startDateTime?: Date,
+    endDateTime?: Date
+  ): Promise<Array<T>>
+  findMinMaxTravelledDistances(
+    searchCircle: GeolocationCircle
+  ): Promise<{ min: number; max: number }>
+  findVehicleModelGroupedTripCounts(
+    searchCircle: GeolocationCircle
+  ): Promise<Record<number, number>>
+}
 
 /**
  * A repository implementation for the trips
  */
-export class MongoRepository {
-  #db: Db
-  #trips: Collection
+export class MongoRepository implements IRepository<Trip> {
+  #trips: mongodb.Collection | undefined
 
   constructor(uri: string, dbName: string) {
-    const client = new MongoClient(uri, {
-      useNewUrlParser: true
-    })
-    client.connect((err) => {
-      assert.equal(null, err) // if not, program is terminated
-      client.close()
-      throw new Error(`unable to connect to the database at uri: ${uri}`)
-    })
-    this.#db = client.db(dbName)
-    this.#trips = this.#db.collection(tripCollectionName)
+    ;(async () => {
+      const cli = await mongodb.MongoClient.connect(uri, {
+        useUnifiedTopology: true,
+        useNewUrlParser: true
+      })
+      const db = await cli.db(dbName)
+      this.#trips = db.collection(tripCollectionName)
+    })()
   }
 
   /**
@@ -38,6 +55,10 @@ export class MongoRepository {
     startDateTime?: Date,
     endDateTime?: Date
   ): Promise<Array<Trip>> {
+    if (!this.#trips) {
+      throw new Error('collection is not initilalized')
+    }
+
     const query = [
       {
         start: {
@@ -61,13 +82,13 @@ export class MongoRepository {
     }
     if (endDateTime) {
       query.push({
-        end_date: { $lte: endDateTime }
+        complete_date: { $lte: endDateTime }
       })
     }
-
-    const queryResultsCursor = this.#trips.find({ $and: query })
+    const queryResultsCursor = this.#trips?.find({ $and: query })
     // Collect results async
     const result = []
+    if (!queryResultsCursor) return []
     for await (const doc of queryResultsCursor) {
       result.push(convertDataSchemaToModel(doc))
     }
@@ -85,6 +106,9 @@ export class MongoRepository {
     min: number
     max: number
   }> {
+    if (!this.#trips) {
+      throw new Error('collection is not initilalized')
+    }
     const query = {
       start: {
         $near: {
@@ -100,18 +124,18 @@ export class MongoRepository {
       }
     }
     const minDistance = this.#trips
-      .find(query)
+      ?.find(query)
       .sort({ distance_travelled: 1 })
       .limit(1)
     const maxDistance = this.#trips
-      .find(query)
+      ?.find(query)
       .sort({ distance_travelled: -1 })
       .limit(1)
+    const minDistanceArray = (await minDistance?.toArray()) ?? []
+    const maxDistanceArray = (await maxDistance?.toArray()) ?? []
     return {
-      min: ((await minDistance.toArray())[0] as TripMongoSchema)
-        .distance_travelled,
-      max: ((await maxDistance.toArray())[0] as TripMongoSchema)
-        .distance_travelled
+      min: (minDistanceArray[0] as TripMongoSchema).distance_travelled,
+      max: (maxDistanceArray[0] as TripMongoSchema).distance_travelled
     }
   }
 
@@ -122,28 +146,30 @@ export class MongoRepository {
    */
   public async findVehicleModelGroupedTripCounts(
     searchCircle: GeolocationCircle
-  ): Promise<any> {
-    const query = {
-      start: {
-        $near: {
-          $geometry: {
+  ): Promise<Record<number, number>> {
+    if (!this.#trips) {
+      throw new Error('collection is not initilalized')
+    }
+    const aggregateResultsCursor = this.#trips?.aggregate([
+      {
+        $geoNear: {
+          key: 'start',
+          distanceField: 'dist.calc',
+          near: {
             type: 'Point',
             coordinates: [
               searchCircle.point.longitude,
               searchCircle.point.latitude
             ]
           },
-          $maxDistance: searchCircle.radius
+          maxDistance: searchCircle.radius
         }
-      }
-    }
-
-    const aggregateResultsCursor = this.#trips.aggregate([
-      { $match: query },
+      },
       { $group: { _id: '$year', count: { $sum: 1 } } }
     ])
     // Collect results async
-    const result = {}
+    const result: Record<number, number> = {}
+    if (!aggregateResultsCursor) return {}
     for await (const doc of aggregateResultsCursor) {
       result[doc._id as number] = doc.count
     }

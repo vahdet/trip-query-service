@@ -1,20 +1,19 @@
 {
+  "ts-node": {
+    "transpileOnly": true
+  },
   "compilerOptions": {
     "target": "es2020",
     "module": "es2020",
     "outDir": "dist",
-    // "rootDir": "./",
     "strict": true,
     "moduleResolution": "node",
     "baseUrl": "./",
-    "paths": {
-      "*": ["src/*"]
-    },
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     // "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "exclude": ["jest.config.ts"]
+  "exclude": ["jest.config.cjs"]
 }

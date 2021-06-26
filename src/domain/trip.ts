@@ -6,13 +6,13 @@ export class Trip {
   startDateTime: Date
   endDateTime?: Date
   vehicle: Vehicle
-  driverRating?: number
+  driverRating?: number | null
   riderRating?: number
   startZipCode?: string
   endZipCode?: string
-  charityId?: number
+  charityId?: number | null
   requestedCarCategory?: string
-  freeCreditUsed?: number
+  freeCreditUsed?: number | null
   rating?: number
   date?: string
   prcp?: number

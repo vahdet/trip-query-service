@@ -1,5 +1,5 @@
-import { Trip } from 'domain/trip'
 import { ObjectID } from 'mongodb'
+import { Trip } from '../domain/trip'
 
 /**
  * Converts database object to domain model.
@@ -50,20 +50,20 @@ export const convertDataSchemaToModel = (document: TripMongoSchema): Trip => {
 }
 
 type geolocation = {
-  type: 'Point'
+  type: 'Point' | string
   coordinates: Array<number>
 }
 
 export type TripMongoSchema = {
   _id?: ObjectID
   distance_travelled: number
-  driver_rating: number
+  driver_rating: number | null
   rider_rating: number
   start_zip_code: null
   end_zip_code: string
-  charity_id: number
+  charity_id: number | null
   requested_car_category: string
-  free_credit_used: number
+  free_credit_used: number | null
   surge_factor: number
   color: string
   make: string

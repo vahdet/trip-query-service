@@ -36,7 +36,7 @@
             "environment": [
                 {
                     "name": "PORT",
-                    "value": 3000
+                    "value": "3000"
                 },
                 {
                     "name": "TOKEN_USER",

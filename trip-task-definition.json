@@ -11,8 +11,8 @@
     "placementConstraints": [],
     "containerDefinitions": [
         {
-            "name": "sample-app",
-            "image": "837986049821.dkr.ecr.eu-west-1.amazonaws.com/bitaksi-assignment",
+            "name": "trip-sandbox",
+            "image": "amazon/amazon-ecs-sample",
             "resourceRequirements": null,
             "essential": true,
             "portMappings": [

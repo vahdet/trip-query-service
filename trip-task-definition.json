@@ -22,15 +22,6 @@
                     "containerPort": 8080
                 }
             ],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "secretOptions": null,
-                "options": {
-                    "awslogs-group": "/ecs/trip-task-definition",
-                    "awslogs-region": "eu-west-1",
-                    "awslogs-stream-prefix": "ecs"
-                }
-            },
             "environment": [
                 {
                     "name": "PORT",

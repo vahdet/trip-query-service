@@ -12,12 +12,12 @@ An simple implementation for trip data querying &amp; reporting use case
 
    ```properties
    PORT=3000
+   TOKEN_USER=user
+   TOKEN_PASS=pass
+   JWT_SECRET=an-extremely-secret-string
+   MONGO_URI=mongodb+srv://user9281:sUvNzESn48M2AWk@assignmentcluster-doq69.mongodb.net/case
+   MONGO_DB_NAME=case
    LOGGER_NAME=default
-   TOKEN_USER=*****
-   TOKEN_PASS=*****
-   JWT_SECRET=*****
-   MONGO_URI=*****
-   MONGO_DB_NAME=*****
    ```
 
 2. Install dependencies and run the project:

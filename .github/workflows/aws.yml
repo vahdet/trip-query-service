@@ -58,5 +58,5 @@ jobs:
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: trip-sandbox-svc
-          cluster: trip-cluster
+          cluster: trip-sandbox-cluster
           wait-for-service-stability: true
